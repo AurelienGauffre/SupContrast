@@ -109,7 +109,7 @@ python main_supcon.py --batch_size 1024 \
   --method SimCLR
 ```
 
-The `--data_folder` must be of form ./path/label/xxx.png folowing https://pytorch.org/docs/stable/torchvision/datasets.html#torchvision.datasets.ImageFolder convension.
+The `--data_folder` must be of form ./path/label/xxx.png folowing https://pytorch.org/docs/stable/torchvision/datasets.html#torchvision.datasets.ImageFolder convention.
 
 and 
 ## t-SNE Visualization

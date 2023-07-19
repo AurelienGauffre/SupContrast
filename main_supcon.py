@@ -17,11 +17,17 @@ from util import set_optimizer, save_model
 from networks.resnet_big import SupConResNet
 from losses import SupConLoss
 
+import wandb
+
 try:
     import apex
     from apex import amp, optimizers
 except ImportError:
     pass
+
+EPOCHS = 200  # default 1000
+BATCH_SIZE = 128  # default 256
+MODEL = 'resnet18'  # default resnet50
 
 
 def parse_option():
@@ -31,17 +37,17 @@ def parse_option():
                         help='print frequency')
     parser.add_argument('--save_freq', type=int, default=50,
                         help='save frequency')
-    parser.add_argument('--batch_size', type=int, default=256,
+    parser.add_argument('--batch_size', type=int, default=BATCH_SIZE,
                         help='batch_size')
     parser.add_argument('--num_workers', type=int, default=16,
                         help='num of workers to use')
-    parser.add_argument('--epochs', type=int, default=1000,
+    parser.add_argument('--epochs', type=int, default=EPOCHS,
                         help='number of training epochs')
 
     # optimization
     parser.add_argument('--learning_rate', type=float, default=0.05,
                         help='learning rate')
-    parser.add_argument('--lr_decay_epochs', type=str, default='700,800,900',
+    parser.add_argument('--lr_decay_epochs', type=str, default='140,160,180', #'700,800,900'
                         help='where to decay lr, can be a list')
     parser.add_argument('--lr_decay_rate', type=float, default=0.1,
                         help='decay rate for learning rate')
@@ -51,7 +57,7 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='resnet50')
+    parser.add_argument('--model', type=str, default=MODEL)
     parser.add_argument('--dataset', type=str, default='cifar10',
                         choices=['cifar10', 'cifar100', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
@@ -78,12 +84,12 @@ def parse_option():
                         help='id for recording multiple runs')
 
     opt = parser.parse_args()
-
+    opt.learning_rate = opt.learning_rate * opt.batch_size / 256
     # check if dataset is path that passed required arguments
     if opt.dataset == 'path':
         assert opt.data_folder is not None \
-            and opt.mean is not None \
-            and opt.std is not None
+               and opt.mean is not None \
+               and opt.std is not None
 
     # set the path according to the environment
     if opt.data_folder is None:
@@ -96,9 +102,7 @@ def parse_option():
     for it in iterations:
         opt.lr_decay_epochs.append(int(it))
 
-    opt.model_name = '{}_{}_{}_lr_{}_decay_{}_bsz_{}_temp_{}_trial_{}'.\
-        format(opt.method, opt.dataset, opt.model, opt.learning_rate,
-               opt.weight_decay, opt.batch_size, opt.temp, opt.trial)
+    opt.model_name = f"{opt.method}_{opt.dataset}_{opt.model}_lr_{opt.learning_rate}_decay_{opt.weight_decay}_bsz_{opt.batch_size}_temp_{opt.temp}_trial_{opt.trial}"
 
     if opt.cosine:
         opt.model_name = '{}_cosine'.format(opt.model_name)
@@ -164,7 +168,7 @@ def set_loader(opt):
                                           download=True)
     elif opt.dataset == 'path':
         train_dataset = datasets.ImageFolder(root=opt.data_folder,
-                                            transform=TwoCropTransform(train_transform))
+                                             transform=TwoCropTransform(train_transform))
     else:
         raise ValueError(opt.dataset)
 
@@ -245,8 +249,8 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
                   'BT {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'DT {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'loss {loss.val:.3f} ({loss.avg:.3f})'.format(
-                   epoch, idx + 1, len(train_loader), batch_time=batch_time,
-                   data_time=data_time, loss=losses))
+                epoch, idx + 1, len(train_loader), batch_time=batch_time,
+                data_time=data_time, loss=losses))
             sys.stdout.flush()
 
     return losses.avg
@@ -255,6 +259,8 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
 def main():
     opt = parse_option()
 
+    print(opt.epochs)
+    print(opt.batch_size)
     # build data loader
     train_loader = set_loader(opt)
 
@@ -266,6 +272,9 @@ def main():
 
     # tensorboard
     logger = tb_logger.Logger(logdir=opt.tb_folder, flush_secs=2)
+
+    # Initialize wandb:
+    wandb.init(project="SupConPrototypes", name=opt.model_name, config=vars(opt))
 
     # training routine
     for epoch in range(1, opt.epochs + 1):
@@ -285,7 +294,7 @@ def main():
             save_file = os.path.join(
                 opt.save_folder, 'ckpt_epoch_{epoch}.pth'.format(epoch=epoch))
             save_model(model, optimizer, opt, epoch, save_file)
-
+        wandb.log({"epoch": epoch, "loss": loss, "lr": optimizer.param_groups[0]['lr']})
     # save the last model
     save_file = os.path.join(
         opt.save_folder, 'last.pth')

@@ -20,6 +20,13 @@ try:
 except ImportError:
     pass
 
+import wandb
+
+BS = 128  # default 256
+EPOCHS = 2  # default 100
+MODEL = 'resnet18'  # default resnet18
+CKPT = './save/SupCon/cifar10_models/SupCon_cifar10_resnet18_lr_0.05_decay_0.0001_bsz_128_temp_0.07_trial_0/last.pth'
+
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
@@ -28,7 +35,7 @@ def parse_option():
                         help='print frequency')
     parser.add_argument('--save_freq', type=int, default=50,
                         help='save frequency')
-    parser.add_argument('--batch_size', type=int, default=256,
+    parser.add_argument('--batch_size', type=int, default=BS,
                         help='batch_size')
     parser.add_argument('--num_workers', type=int, default=16,
                         help='num of workers to use')
@@ -48,7 +55,7 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='resnet50')
+    parser.add_argument('--model', type=str, default=MODEL)
     parser.add_argument('--dataset', type=str, default='cifar10',
                         choices=['cifar10', 'cifar100'], help='dataset')
 
@@ -58,7 +65,7 @@ def parse_option():
     parser.add_argument('--warm', action='store_true',
                         help='warm-up for large batch training')
 
-    parser.add_argument('--ckpt', type=str, default='',
+    parser.add_argument('--ckpt', type=str, default=CKPT,
                         help='path to pre-trained model')
 
     opt = parser.parse_args()
@@ -71,7 +78,7 @@ def parse_option():
     for it in iterations:
         opt.lr_decay_epochs.append(int(it))
 
-    opt.model_name = '{}_{}_lr_{}_decay_{}_bsz_{}'.\
+    opt.model_name = '{}_{}_lr_{}_decay_{}_bsz_{}'. \
         format(opt.dataset, opt.model, opt.learning_rate, opt.weight_decay,
                opt.batch_size)
 
@@ -170,14 +177,19 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
         end = time.time()
 
         # print info
+
+        wandb.log({
+            "Train/CELoss": losses.avg,
+            "Train/Acc@1": top1.avg,
+        })
         if (idx + 1) % opt.print_freq == 0:
             print('Train: [{0}][{1}/{2}]\t'
                   'BT {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'DT {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'loss {loss.val:.3f} ({loss.avg:.3f})\t'
                   'Acc@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
-                   epoch, idx + 1, len(train_loader), batch_time=batch_time,
-                   data_time=data_time, loss=losses, top1=top1))
+                epoch, idx + 1, len(train_loader), batch_time=batch_time,
+                data_time=data_time, loss=losses, top1=top1))
             sys.stdout.flush()
 
     return losses.avg, top1.avg
@@ -217,8 +229,8 @@ def validate(val_loader, model, classifier, criterion, opt):
                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                       'Acc@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
-                       idx, len(val_loader), batch_time=batch_time,
-                       loss=losses, top1=top1))
+                    idx, len(val_loader), batch_time=batch_time,
+                    loss=losses, top1=top1))
 
     print(' * Acc@1 {top1.avg:.3f}'.format(top1=top1))
     return losses.avg, top1.avg
@@ -237,22 +249,31 @@ def main():
     # build optimizer
     optimizer = set_optimizer(opt, classifier)
 
+    # Initialize wandb:
+    wandb.init(project="SupConPrototypes", name=f"LE{opt.model_name}", config=vars(opt))
+
     # training routine
     for epoch in range(1, opt.epochs + 1):
         adjust_learning_rate(opt, optimizer, epoch)
 
         # train for one epoch
         time1 = time.time()
-        loss, acc = train(train_loader, model, classifier, criterion,
-                          optimizer, epoch, opt)
+        train_loss, train_acc = train(train_loader, model, classifier, criterion,
+                                      optimizer, epoch, opt)
         time2 = time.time()
         print('Train epoch {}, total time {:.2f}, accuracy:{:.2f}'.format(
-            epoch, time2 - time1, acc))
+            epoch, time2 - time1, train_acc))
+
+        # log training metrics
 
         # eval for one epoch
-        loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
+        val_loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
         if val_acc > best_acc:
             best_acc = val_acc
+
+        # log validation metrics
+        wandb.log({"epoch": epoch, "Train/CELoss": train_loss, "Train/Acc": train_acc, "Val/CELoss": val_loss,
+                   "Val/Acc": val_acc, "Val/BestValAcc": best_acc})
 
     print('best accuracy: {:.2f}'.format(best_acc))
 
