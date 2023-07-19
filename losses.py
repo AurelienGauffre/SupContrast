@@ -59,7 +59,7 @@ class SupConLoss(nn.Module):
         if self.contrast_mode == 'one':
             anchor_feature = features[:, 0]
             anchor_count = 1
-        #default value is this one
+        #default value is this all
         elif self.contrast_mode == 'all':
             anchor_feature = contrast_feature
             anchor_count = contrast_count

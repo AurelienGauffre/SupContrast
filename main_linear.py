@@ -22,10 +22,11 @@ except ImportError:
 
 import wandb
 
+EXP_NAME = 'exp1LE'
 BS = 128  # default 256
-EPOCHS = 2  # default 100
+EPOCHS = 100  # default 100
 MODEL = 'resnet18'  # default resnet18
-CKPT = './save/SupCon/cifar10_models/SupCon_cifar10_resnet18_lr_0.05_decay_0.0001_bsz_128_temp_0.07_trial_0/last.pth'
+CKPT = './save/SupCon/exp1/last.ckpt'
 
 
 def parse_option():
@@ -80,7 +81,7 @@ def parse_option():
 
     opt.model_name = '{}_{}_lr_{}_decay_{}_bsz_{}'. \
         format(opt.dataset, opt.model, opt.learning_rate, opt.weight_decay,
-               opt.batch_size)
+               opt.batch_size) if EXP_NAME == '' else EXP_NAME
 
     if opt.cosine:
         opt.model_name = '{}_cosine'.format(opt.model_name)

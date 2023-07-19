@@ -14,7 +14,7 @@ from torchvision import transforms, datasets
 from util import TwoCropTransform, AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate
 from util import set_optimizer, save_model
-from networks.resnet_big import SupConResNet
+from networks.resnet_big import SupConResNet, SupConResNetProto
 from losses import SupConLoss
 
 import wandb
@@ -25,9 +25,14 @@ try:
 except ImportError:
     pass
 
-EPOCHS = 200  # default 1000
-BATCH_SIZE = 128  # default 256
+EXP_NUM = 1
+EXP_NAME = f'exp{EXP_NUM} : SupCon_bs256_epochs1000'
+METHOD = 'SupCon' # 'SupCon' or 'SimCLR' or 'SupConProto'
+EPOCHS = 1000  # default 1000
+BATCH_SIZE = 256  # default 256
 MODEL = 'resnet18'  # default resnet50
+
+HEAD = 'mlp'  # 'mlp' or 'linear'
 
 
 def parse_option():
@@ -39,7 +44,7 @@ def parse_option():
                         help='save frequency')
     parser.add_argument('--batch_size', type=int, default=BATCH_SIZE,
                         help='batch_size')
-    parser.add_argument('--num_workers', type=int, default=16,
+    parser.add_argument('--num_workers', type=int, default=8,
                         help='num of workers to use')
     parser.add_argument('--epochs', type=int, default=EPOCHS,
                         help='number of training epochs')
@@ -47,7 +52,7 @@ def parse_option():
     # optimization
     parser.add_argument('--learning_rate', type=float, default=0.05,
                         help='learning rate')
-    parser.add_argument('--lr_decay_epochs', type=str, default='140,160,180', #'700,800,900'
+    parser.add_argument('--lr_decay_epochs', type=str, default='700,800,900',  # '700,800,900'
                         help='where to decay lr, can be a list')
     parser.add_argument('--lr_decay_rate', type=float, default=0.1,
                         help='decay rate for learning rate')
@@ -66,8 +71,8 @@ def parse_option():
     parser.add_argument('--size', type=int, default=32, help='parameter for RandomResizedCrop')
 
     # method
-    parser.add_argument('--method', type=str, default='SupCon',
-                        choices=['SupCon', 'SimCLR'], help='choose method')
+    parser.add_argument('--method', type=str, default=METHOD,
+                        choices=['SupCon', 'SupConProto', 'SimCLR'], help='choose method')
 
     # temperature
     parser.add_argument('--temp', type=float, default=0.07,
@@ -102,7 +107,7 @@ def parse_option():
     for it in iterations:
         opt.lr_decay_epochs.append(int(it))
 
-    opt.model_name = f"{opt.method}_{opt.dataset}_{opt.model}_lr_{opt.learning_rate}_decay_{opt.weight_decay}_bsz_{opt.batch_size}_temp_{opt.temp}_trial_{opt.trial}"
+    opt.model_name = f"{opt.method}_{opt.dataset}_{opt.model}_lr_{opt.learning_rate}_decay_{opt.weight_decay}_bsz_{opt.batch_size}_temp_{opt.temp}_trial_{opt.trial}" if EXP_NAME == '' else EXP_NAME
 
     if opt.cosine:
         opt.model_name = '{}_cosine'.format(opt.model_name)
@@ -125,9 +130,16 @@ def parse_option():
     if not os.path.isdir(opt.tb_folder):
         os.makedirs(opt.tb_folder)
 
-    opt.save_folder = os.path.join(opt.model_path, opt.model_name)
+    opt.save_folder = os.path.join(opt.model_path, f'exp{EXP_NUM}' )
     if not os.path.isdir(opt.save_folder):
         os.makedirs(opt.save_folder)
+
+    if opt.dataset == 'cifar10':
+        opt.n_cls = 10
+    elif opt.dataset == 'cifar100':
+        opt.n_cls = 100
+    else:
+        raise ValueError('dataset not supported: {}'.format(opt.dataset))
 
     return opt
 
@@ -181,7 +193,11 @@ def set_loader(opt):
 
 
 def set_model(opt):
-    model = SupConResNet(name=opt.model)
+    if opt.method in ['SupCon', 'SimCLR']:
+        model = SupConResNet(name=opt.model, head=HEAD)
+    elif opt.method in ['SupConProto']:
+        model = SupConResNetProto(name=opt.model, head=HEAD)
+
     criterion = SupConLoss(temperature=opt.temp)
 
     # enable synchronized Batch Normalization
@@ -227,6 +243,15 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
             loss = criterion(features, labels)
         elif opt.method == 'SimCLR':
             loss = criterion(features)
+        elif opt.method == 'SupConProto':
+            labels = torch.cat([labels, torch.arange(opt.n_cls).cuda()], dim=0)
+            prototypes = model.prototypes
+            prototypes = prototypes.unsqueeze(1)
+            prototypes = prototypes.repeat(1, 2, 1)
+            features = torch.cat([features, prototypes], dim=0)
+
+            loss = criterion(features, labels)
+
         else:
             raise ValueError('contrastive method not supported: {}'.
                              format(opt.method))
@@ -294,7 +319,7 @@ def main():
             save_file = os.path.join(
                 opt.save_folder, 'ckpt_epoch_{epoch}.pth'.format(epoch=epoch))
             save_model(model, optimizer, opt, epoch, save_file)
-        wandb.log({"epoch": epoch, "loss": loss, "lr": optimizer.param_groups[0]['lr']})
+        wandb.log({"epoch": epoch, "Supcon/loss": loss, "Supcon/lr": optimizer.param_groups[0]['lr']})
     # save the last model
     save_file = os.path.join(
         opt.save_folder, 'last.pth')
