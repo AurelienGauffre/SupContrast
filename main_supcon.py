@@ -15,7 +15,7 @@ from util import TwoCropTransform, AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate
 from util import set_optimizer, save_model
 from networks.resnet_big import SupConResNet, SupConResNetProto
-from losses import SupConLoss
+from losses import SupConLoss, SupConLossProto
 
 import wandb
 
@@ -25,11 +25,11 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = 2
+EXP_NUM = 'delete'
 EXP_NAME = f'exp{EXP_NUM} : SupConProto(v0 all)_bs256_epochs1000'
-METHOD = 'SupConProto' # 'SupCon' or 'SimCLR' or 'SupConProto'
+METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 EPOCHS = 1000  # default 1000
-BATCH_SIZE = 256  # default 256
+BATCH_SIZE = 32  # default 256
 MODEL = 'resnet18'  # default resnet50
 
 HEAD = 'mlp'  # 'mlp' or 'linear'
@@ -130,7 +130,7 @@ def parse_option():
     if not os.path.isdir(opt.tb_folder):
         os.makedirs(opt.tb_folder)
 
-    opt.save_folder = os.path.join(opt.model_path, f'exp{EXP_NUM}' )
+    opt.save_folder = os.path.join(opt.model_path, f'exp{EXP_NUM}')
     if not os.path.isdir(opt.save_folder):
         os.makedirs(opt.save_folder)
 
@@ -193,12 +193,13 @@ def set_loader(opt):
 
 
 def set_model(opt):
+
     if opt.method in ['SupCon', 'SimCLR']:
         model = SupConResNet(name=opt.model, head=HEAD)
+        criterion = SupConLoss(temperature=opt.temp)
     elif opt.method in ['SupConProto']:
         model = SupConResNetProto(name=opt.model, head=HEAD)
-
-    criterion = SupConLoss(temperature=opt.temp)
+        criterion = SupConLossProto(temperature=opt.temp)
 
     # enable synchronized Batch Normalization
     if opt.syncBN:
@@ -244,13 +245,13 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
         elif opt.method == 'SimCLR':
             loss = criterion(features)
         elif opt.method == 'SupConProto':
-            labels = torch.cat([labels, torch.arange(opt.n_cls).cuda()], dim=0)
+            #labels = torch.cat([labels, torch.arange(opt.n_cls).cuda()], dim=0)
             prototypes = model.prototypes
-            prototypes = prototypes.unsqueeze(1)
-            prototypes = prototypes.repeat(1, 2, 1)
-            features = torch.cat([features, prototypes], dim=0)
+            # prototypes = prototypes.unsqueeze(1)
+            # prototypes = prototypes.repeat(1, 2, 1)
+            # features = torch.cat([features, prototypes], dim=0)
 
-            loss = criterion(features, labels)
+            loss = criterion(features, labels, prototypes)
 
         else:
             raise ValueError('contrastive method not supported: {}'.

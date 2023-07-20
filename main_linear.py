@@ -26,7 +26,7 @@ EXP_NAME = 'exp1LE'
 BS = 128  # default 256
 EPOCHS = 100  # default 100
 MODEL = 'resnet18'  # default resnet18
-CKPT = './save/SupCon/exp1/last.ckpt'
+CKPT = './save/SupCon/cifar10_models/exp1/last.ckpt'
 
 
 def parse_option():
