@@ -26,9 +26,9 @@ except ImportError:
     pass
 
 EXP_NUM = 'delete'
-EXP_NAME = f'exp{EXP_NUM} : SupConProto(v0 all)_bs256_epochs1000'
+EXP_NAME = f'exp{EXP_NUM} : SupConProto(v1)_bs256_epochs1000'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-EPOCHS = 1000  # default 1000
+EPOCHS = 10  # default 1000
 BATCH_SIZE = 32  # default 256
 MODEL = 'resnet18'  # default resnet50
 

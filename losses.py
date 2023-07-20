@@ -148,18 +148,12 @@ class SupConLossProto(nn.Module):
 
         contrast_count = features.shape[1]
         contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)
+        anchor_feature = contrast_feature
+        anchor_count = contrast_count # = 2 for supcon classical case
 
-        if self.contrast_mode == 'one':
-            anchor_feature = features[:, 0]
-            anchor_count = 1
-        #default value is this all
-        elif self.contrast_mode == 'all':
-            anchor_feature = contrast_feature
-            anchor_feature = torch.cat([anchor_feature, prototypes], dim=0)
-            anchor_count = contrast_count
-        else:
-            raise ValueError('Unknown mode: {}'.format(self.contrast_mode))
-
+        # Adding prototypes to anchor_feature
+        anchor_feature = torch.cat([anchor_feature, prototypes], dim=0)
+        contrast_feature = torch.cat([contrast_feature, prototypes], dim=0)
         # compute logits
         anchor_dot_contrast = torch.div(
             torch.matmul(anchor_feature, contrast_feature.T),
@@ -169,8 +163,14 @@ class SupConLossProto(nn.Module):
         logits = anchor_dot_contrast - logits_max.detach()
 
         # tile mask
-        mask = mask.repeat(anchor_count, contrast_count)
-        mask = torch.cat([mask, torch.zeros_like(mask)], dim=0) #TODO HERE double concat a faire pour passer de 
+        mask = mask.repeat(anchor_count, contrast_count) #2B x 2B
+        # Creating the mask for the prototypes
+        mask_prototypes = torch.eq(torch.arange(n_cls).to(device).reshape(-1,1),labels.T).float()
+        mask_prototypes_down = mask_prototypes.repeat(1, contrast_count)
+        mask = torch.cat([mask, mask_prototypes_down], dim=0)
+        mask_prototypes_right = torch.cat([mask_prototypes_down.T,torch.zeros(n_cls, n_cls).to(device)], dim=0)
+        mask = torch.cat([mask, mask_prototypes_right], dim=1)
+
         # mask-out self-contrast cases
         logits_mask = torch.scatter(
             torch.ones_like(mask),
@@ -189,6 +189,6 @@ class SupConLossProto(nn.Module):
 
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
-        loss = loss.view(anchor_count, batch_size).mean()
+    #    loss = loss.view(anchor_count, batch_size).mean()
 
-        return loss
+        return loss.mean()
