@@ -26,8 +26,8 @@ EXP_NAME = 'exp1 LE: 100epochs'
 METHOD = 'SupCon'  # default SupConProto
 BS = 128  # default 256
 EPOCHS = 100  # default 100
-MODEL = 'resnet18'  # default resnet18
 CKPT = './save/SupCon/cifar10_models/exp1/ckpt_epoch_100.pth' # default last.pth
+MODEL = 'resnet18'  # default resnet18
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
