@@ -23,7 +23,7 @@ except ImportError:
 import wandb
 
 EXP_NAME = 'exp2 LE: 200epochs'
-METHOD = 'Proto'  # default SupConProto
+METHOD = 'SupConProto'  # default SupConProto
 BS = 128  # default 256
 EPOCHS = 200  # default 100
 CKPT = './save/SupCon/cifar10_models/exp2/ckpt_epoch_200.pth' # default last.pth
@@ -113,6 +113,9 @@ def set_model(opt):
         model = SupConResNet(name=opt.model)
     elif opt.method in ['SupConProto']:
         model = SupConResNetProto(name=opt.model)
+    else:
+        raise ValueError('contrastive method not supported: {}'.
+                         format(opt.method))
 
     criterion = torch.nn.CrossEntropyLoss()
 
