@@ -22,11 +22,11 @@ except ImportError:
 
 import wandb
 
-EXP_NAME = 'exp1 LE: 200epochs'
-METHOD = 'SupCon'  # default SupConProto
+EXP_NAME = 'exp2 LE: 200epochs'
+METHOD = 'Proto'  # default SupConProto
 BS = 128  # default 256
 EPOCHS = 200  # default 100
-CKPT = './save/SupCon/cifar10_models/exp1/ckpt_epoch_200.pth' # default last.pth
+CKPT = './save/SupCon/cifar10_models/exp2/ckpt_epoch_200.pth' # default last.pth
 MODEL = 'resnet18'  # default resnet18
 
 def parse_option():
