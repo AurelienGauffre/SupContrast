@@ -12,7 +12,7 @@ from main_ce import set_loader
 from util import AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate, accuracy
 from util import set_optimizer
-from networks.resnet_big import SupConResNet, LinearClassifier
+from networks.resnet_big import SupConResNet, LinearClassifier,SupConResNetProto
 
 try:
     import apex
@@ -23,11 +23,11 @@ except ImportError:
 import wandb
 
 EXP_NAME = 'exp2LE'
+METHOD = 'SupConProto'  # default SupCon
 BS = 128  # default 256
 EPOCHS = 100  # default 100
 MODEL = 'resnet18'  # default resnet18
 CKPT = './save/SupCon/cifar10_models/exp2/last.pth'
-
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
@@ -70,7 +70,7 @@ def parse_option():
                         help='path to pre-trained model')
 
     opt = parser.parse_args()
-
+    opt.method = METHOD
     # set the path according to the environment
     opt.data_folder = './datasets/'
 
@@ -109,7 +109,11 @@ def parse_option():
 
 
 def set_model(opt):
-    model = SupConResNet(name=opt.model)
+    if opt.method in ['SupCon', 'SimCLR']:
+        model = SupConResNet(name=opt.model)
+    elif opt.method in ['SupConProto']:
+        model = SupConResNetProto(name=opt.model)
+
     criterion = torch.nn.CrossEntropyLoss()
 
     classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls)
