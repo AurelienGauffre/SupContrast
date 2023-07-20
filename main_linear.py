@@ -22,12 +22,12 @@ except ImportError:
 
 import wandb
 
-EXP_NAME = 'exp2LE'
+EXP_NAME = 'exp2 LE: 100epochs'
 METHOD = 'SupConProto'  # default SupCon
 BS = 128  # default 256
 EPOCHS = 100  # default 100
 MODEL = 'resnet18'  # default resnet18
-CKPT = './save/SupCon/cifar10_models/exp2/last.pth'
+CKPT = './save/SupCon/cifar10_models/exp2/ckpt_epoch_100.pth' # default last.pth
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
@@ -255,7 +255,7 @@ def main():
     optimizer = set_optimizer(opt, classifier)
 
     # Initialize wandb:
-    wandb.init(project="SupConPrototypes", name=f"LE{opt.model_name}", config=vars(opt))
+    wandb.init(project="SupConPrototypes", name=f"{opt.model_name}", config=vars(opt))
 
     # training routine
     for epoch in range(1, opt.epochs + 1):
