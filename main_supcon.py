@@ -25,11 +25,11 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = 'delete'
-EXP_NAME = f'exp{EXP_NUM} : SupConProto(v1)_bs256_epochs1000'
+EXP_NUM = '3'
+EXP_NAME = f'exp{3} : SupConProto(v1)_bs256_epochs1000'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-EPOCHS = 10  # default 1000
-BATCH_SIZE = 32  # default 256
+EPOCHS = 1000  # default 1000
+BATCH_SIZE = 256  # default 256
 MODEL = 'resnet18'  # default resnet50
 
 HEAD = 'mlp'  # 'mlp' or 'linear'

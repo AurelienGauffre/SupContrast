@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import torch
 import torch.nn as nn
-
+import torch.nn.functional as F
 
 class SupConLoss(nn.Module):
     """Supervised Contrastive Learning: https://arxiv.org/pdf/2004.11362.pdf.
@@ -152,6 +152,7 @@ class SupConLossProto(nn.Module):
         anchor_count = contrast_count # = 2 for supcon classical case
 
         # Adding prototypes to anchor_feature
+        prototypes = F.normalize(prototypes, dim=1)
         anchor_feature = torch.cat([anchor_feature, prototypes], dim=0)
         contrast_feature = torch.cat([contrast_feature, prototypes], dim=0)
         # compute logits
@@ -185,7 +186,7 @@ class SupConLossProto(nn.Module):
         log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True))
 
         # compute mean of log-likelihood over positive
-        mean_log_prob_pos = (mask * log_prob).sum(1) / mask.sum(1)
+        mean_log_prob_pos = (mask * log_prob).sum(1) / (mask.sum(1)+ 1e-8)
 
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
