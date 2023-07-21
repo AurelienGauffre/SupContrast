@@ -27,7 +27,7 @@ import wandb
 EXP_NAME = 'exp3 LE: 100epochs'
 METHOD = 'SupConProto'  # default SupConProto
 INIT_PROTO = True #if True, init the FC weights with proto
-NO_GRAD = False  #if True, no modification of the weights
+NO_GRAD = True  #if True, no modification of the weights
 BS = 128  # default 256
 EPOCHS = 100  # default 100
 CKPT = './save/SupCon/cifar10_models/exp3/ckpt_epoch_100.pth' # default last.pth
