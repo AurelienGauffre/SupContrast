@@ -167,6 +167,7 @@ class SupConResNet(nn.Module):
     def __init__(self, name='resnet50', head='mlp', feat_dim=128):
         super(SupConResNet, self).__init__()
         model_fun, dim_in = model_dict[name]
+        self.dim_in = dim_in
         self.encoder = model_fun()
         if head == 'linear':
             self.head = nn.Linear(dim_in, feat_dim)
@@ -194,7 +195,7 @@ class SupConResNetProto(nn.Module):
         model_fun, dim_in = model_dict[name]
         self.encoder = model_fun()
         self.prototypes = nn.Parameter(torch.randn(10, feat_dim)) #todo enlever le hardcoding du nb de classes
-
+        self.dim_in = dim_in
         if head == 'linear':
             self.head = nn.Linear(dim_in, feat_dim)
         elif head == 'mlp':
@@ -227,11 +228,14 @@ class SupCEResNet(nn.Module):
 
 class LinearClassifier(nn.Module):
     """Linear classifier"""
-    def __init__(self, name='resnet50', num_classes=10):
+    def __init__(self, name='resnet50', num_classes=10,prototypes=None):
         super(LinearClassifier, self).__init__()
         _, feat_dim = model_dict[name]
-        self.fc = nn.Linear(feat_dim, num_classes)
-
+        if prototypes is None:
+            self.fc = nn.Linear(feat_dim, num_classes)
+        else :
+            self.fc = nn.Linear(prototypes.shape[1], prototypes.shape[0], bias=False)
+            self.fc.weight = prototypes
     def forward(self, features):
         return self.fc(features)
 

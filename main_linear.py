@@ -26,15 +26,16 @@ import wandb
 
 EXP_NAME = 'exp3 LE: 100epochs'
 METHOD = 'SupConProto'  # default SupConProto
-INIT_PROTO = True #if True, init the FC weights with proto
-NO_GRAD = True  #if True, no modification of the weights
-BS = 128  # default 256
+PREDICT_WITH_PROTO = True #if True, init the FC weights with proto
+NO_GRAD = False # if True, freeze the backbone
+
+BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
 CKPT = './save/SupCon/cifar10_models/exp3/ckpt_epoch_100.pth' # default last.pth
 MODEL = 'resnet18'  # default resnet18
 
-if INIT_PROTO :
-    EXP_NAME += '_initProto'
+if PREDICT_WITH_PROTO :
+    EXP_NAME += '_predWithProto'
 if NO_GRAD :
     EXP_NAME += '_noGrad'
     EPOCHS = 10
@@ -127,8 +128,10 @@ def set_model(opt):
                          format(opt.method))
 
     criterion = torch.nn.CrossEntropyLoss()
-
-    classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls)
+    if PREDICT_WITH_PROTO:
+        classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls,prototypes = model.prototypes)
+    else:
+        classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls)
 
     ckpt = torch.load(opt.ckpt, map_location='cpu')
     state_dict = ckpt['model']
@@ -176,6 +179,9 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
         # compute loss
         with torch.no_grad():
             features = model.encoder(images)
+            if PREDICT_WITH_PROTO: # if we want to predict with prototypes, features have to live in contrastive space
+                features = model.head(features)
+
         output = classifier(features.detach())
         loss = criterion(output, labels)
 
@@ -229,7 +235,11 @@ def validate(val_loader, model, classifier, criterion, opt):
             bsz = labels.shape[0]
 
             # forward
-            output = classifier(model.encoder(images))
+            features = model.encoder(images)
+            if PREDICT_WITH_PROTO:
+                features = model.head(features)
+            output = classifier(features)
+
             loss = criterion(output, labels)
 
             # update metric
@@ -270,8 +280,6 @@ def main():
     wandb.init(project="SupConPrototypes", name=f"{opt.model_name}", config=vars(opt))
 
     # training routine
-    if INIT_PROTO == True:
-       classifier.fc.weight = nn.Parameter(model.prototypes)
 
     for epoch in range(1, opt.epochs + 1):
         adjust_learning_rate(opt, optimizer, epoch)
