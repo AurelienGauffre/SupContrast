@@ -287,7 +287,12 @@ def main():
         # train for one epoch
         time1 = time.time()
 
-        with torch.set_grad_enabled(not NO_GRAD):
+        if NO_GRAD:
+            with torch.no_grad():
+                train_loss, train_acc = train(train_loader, model, classifier, criterion,
+                                              optimizer, epoch, opt)
+        else:
+
             train_loss, train_acc = train(train_loader, model, classifier, criterion,
                                       optimizer, epoch, opt)
         time2 = time.time()
@@ -297,7 +302,10 @@ def main():
         # log training metrics
 
         # eval for one epoch
-        with torch.set_grad_enabled(not NO_GRAD):
+        if NO_GRAD:
+            with torch.no_grad():
+                val_loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
+        else:
             val_loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
         if val_acc > best_acc:
             best_acc = val_acc
