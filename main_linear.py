@@ -14,6 +14,8 @@ from util import adjust_learning_rate, warmup_learning_rate, accuracy
 from util import set_optimizer
 from networks.resnet_big import SupConResNet, LinearClassifier,SupConResNetProto
 
+import torch.nn as nn
+
 try:
     import apex
     from apex import amp, optimizers
@@ -22,11 +24,13 @@ except ImportError:
 
 import wandb
 
-EXP_NAME = 'exp1 LE: 500epochs'
-METHOD = 'SupCon'  # default SupConProto
+EXP_NAME = 'exp3 LE: 100epochs'
+METHOD = 'SupConProto'  # default SupConProto
+INIT_PROTO = False #if True, init the FC weights with proto
+NO_GRAD = False  #if True, no modification of the weights
 BS = 128  # default 256
 EPOCHS = 100  # default 100
-CKPT = './save/SupCon/cifar10_models/exp1/ckpt_epoch_500.pth' # default last.pth
+CKPT = './save/SupCon/cifar10_models/exp3/ckpt_epoch_100.pth' # default last.pth
 MODEL = 'resnet18'  # default resnet18
 
 def parse_option():
@@ -261,12 +265,17 @@ def main():
     wandb.init(project="SupConPrototypes", name=f"{opt.model_name}", config=vars(opt))
 
     # training routine
+    if INIT_PROTO == True:
+       classifier.fc.weight = nn.Parameter(model.prototypes)
+
     for epoch in range(1, opt.epochs + 1):
         adjust_learning_rate(opt, optimizer, epoch)
 
         # train for one epoch
         time1 = time.time()
-        train_loss, train_acc = train(train_loader, model, classifier, criterion,
+
+        with torch.set_grad_enabled(not NO_GRAD):
+            train_loss, train_acc = train(train_loader, model, classifier, criterion,
                                       optimizer, epoch, opt)
         time2 = time.time()
         print('Train epoch {}, total time {:.2f}, accuracy:{:.2f}'.format(
@@ -275,7 +284,8 @@ def main():
         # log training metrics
 
         # eval for one epoch
-        val_loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
+        with torch.set_grad_enabled(not NO_GRAD):
+            val_loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
         if val_acc > best_acc:
             best_acc = val_acc
 
@@ -283,7 +293,8 @@ def main():
         wandb.log({"epoch": epoch, "Train/CELoss": train_loss, "Train/Acc": train_acc, "Val/CELoss": val_loss,
                    "Val/Acc": val_acc, "Val/BestValAcc": best_acc})
 
-    print('best accuracy: {:.2f}'.format(best_acc))
+        print('best accuracy: {:.2f}'.format(best_acc))
+
 
 
 if __name__ == '__main__':

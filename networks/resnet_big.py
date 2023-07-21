@@ -234,3 +234,15 @@ class LinearClassifier(nn.Module):
 
     def forward(self, features):
         return self.fc(features)
+
+# class PrototypeClassifier(nn.Module):
+#     """Prototype based classifier"""
+#     def __init__(self, prototypes):
+#         super(PrototypeClassifier, self).__init__()
+#         self.prototypes = prototypes
+#         num_classes, feat_dim = self.prototypes.shape
+#         self.fc = nn.Linear(feat_dim, num_classes)
+#         self.fc.weight = nn.Parameter(self.prototypes)
+#
+#     def forward(self, features):
+#         return self.fc(features)
