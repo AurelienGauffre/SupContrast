@@ -191,9 +191,10 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
         top1.update(acc1[0], bsz)
 
         # SGD
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        if not NO_GRAD:
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -287,12 +288,7 @@ def main():
         # train for one epoch
         time1 = time.time()
 
-        if NO_GRAD:
-            with torch.no_grad():
-                train_loss, train_acc = train(train_loader, model, classifier, criterion,
-                                              optimizer, epoch, opt)
-        else:
-
+        with torch.set_grad_enabled(not NO_GRAD):
             train_loss, train_acc = train(train_loader, model, classifier, criterion,
                                       optimizer, epoch, opt)
         time2 = time.time()
@@ -302,10 +298,7 @@ def main():
         # log training metrics
 
         # eval for one epoch
-        if NO_GRAD:
-            with torch.no_grad():
-                val_loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
-        else:
+        with torch.set_grad_enabled(not NO_GRAD):
             val_loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
         if val_acc > best_acc:
             best_acc = val_acc
