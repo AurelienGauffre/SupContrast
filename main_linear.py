@@ -26,13 +26,18 @@ import wandb
 
 EXP_NAME = 'exp3 LE: 100epochs'
 METHOD = 'SupConProto'  # default SupConProto
-INIT_PROTO = False #if True, init the FC weights with proto
+INIT_PROTO = True #if True, init the FC weights with proto
 NO_GRAD = False  #if True, no modification of the weights
 BS = 128  # default 256
 EPOCHS = 100  # default 100
 CKPT = './save/SupCon/cifar10_models/exp3/ckpt_epoch_100.pth' # default last.pth
 MODEL = 'resnet18'  # default resnet18
 
+if INIT_PROTO :
+    EXP_NAME += '_initProto'
+if NO_GRAD :
+    EXP_NAME += '_noGrad'
+    EPOCHS = 10
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
 
