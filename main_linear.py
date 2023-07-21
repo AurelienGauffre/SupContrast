@@ -27,7 +27,7 @@ import wandb
 EXP_NAME = 'exp3 LE: 100epochs'
 METHOD = 'SupConProto'  # default SupConProto
 PREDICT_WITH_PROTO = True #if True, init the FC weights with proto
-NO_GRAD = False # if True, freeze the backbone
+NO_GRAD = True # if True, freeze the backbone
 
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
@@ -48,7 +48,7 @@ def parse_option():
                         help='save frequency')
     parser.add_argument('--batch_size', type=int, default=BS,
                         help='batch_size')
-    parser.add_argument('--num_workers', type=int, default=16,
+    parser.add_argument('--num_workers', type=int, default=8,
                         help='num of workers to use')
     parser.add_argument('--epochs', type=int, default=100,
                         help='number of training epochs')
