@@ -8,9 +8,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class SupConLoss(nn.Module):
     """Supervised Contrastive Learning: https://arxiv.org/pdf/2004.11362.pdf.
     It also supports the unsupervised contrastive loss in SimCLR"""
+
     def __init__(self, temperature=0.07, contrast_mode='all',
                  base_temperature=0.07):
         super(SupConLoss, self).__init__()
@@ -59,7 +61,7 @@ class SupConLoss(nn.Module):
         if self.contrast_mode == 'one':
             anchor_feature = features[:, 0]
             anchor_count = 1
-        #default value is this all
+        # default value is this all
         elif self.contrast_mode == 'all':
             anchor_feature = contrast_feature
             anchor_count = contrast_count
@@ -102,6 +104,7 @@ class SupConLoss(nn.Module):
 class SupConLossProto(nn.Module):
     """Supervised Contrastive Learning: https://arxiv.org/pdf/2004.11362.pdf.
     It also supports the unsupervised contrastive loss in SimCLR"""
+
     def __init__(self, temperature=0.07, contrast_mode='all',
                  base_temperature=0.07):
         super(SupConLossProto, self).__init__()
@@ -149,10 +152,10 @@ class SupConLossProto(nn.Module):
         contrast_count = features.shape[1]
         contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)
         anchor_feature = contrast_feature
-        anchor_count = contrast_count # = 2 for supcon classical case
+        anchor_count = contrast_count  # = 2 for supcon classical case
 
         # Adding prototypes_proj to anchor_feature
-        #prototypes_proj = F.normalize(prototypes_proj, dim=1) deja normalisé avant
+        # prototypes_proj = F.normalize(prototypes_proj, dim=1) deja normalisé avant
         anchor_feature = torch.cat([anchor_feature, prototypes_proj], dim=0)
         contrast_feature = torch.cat([contrast_feature, prototypes_proj], dim=0)
         # compute logits
@@ -164,12 +167,12 @@ class SupConLossProto(nn.Module):
         logits = anchor_dot_contrast - logits_max.detach()
 
         # tile mask
-        mask = mask.repeat(anchor_count, contrast_count) #2B x 2B
+        mask = mask.repeat(anchor_count, contrast_count)  # 2B x 2B
         # Creating the mask for the prototypes_proj
-        mask_prototypes = torch.eq(torch.arange(n_cls).to(device).reshape(-1,1),labels.T).float()
+        mask_prototypes = torch.eq(torch.arange(n_cls, device=device).reshape(-1, 1), labels.T).float()
         mask_prototypes_down = mask_prototypes.repeat(1, contrast_count)
         mask = torch.cat([mask, mask_prototypes_down], dim=0)
-        mask_prototypes_right = torch.cat([mask_prototypes_down.T,torch.zeros(n_cls, n_cls).to(device)], dim=0)
+        mask_prototypes_right = torch.cat([mask_prototypes_down.T, torch.zeros(n_cls, n_cls,device=device)], dim=0)
         mask = torch.cat([mask, mask_prototypes_right], dim=1)
 
         # mask-out self-contrast cases
@@ -186,10 +189,10 @@ class SupConLossProto(nn.Module):
         log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True))
 
         # compute mean of log-likelihood over positive
-        mean_log_prob_pos = (mask * log_prob).sum(1) / (mask.sum(1)+ 1e-8)
+        mean_log_prob_pos = (mask * log_prob).sum(1) / (mask.sum(1) + 1e-8)
 
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
-    #    loss = loss.view(anchor_count, batch_size).mean()
+        #    loss = loss.view(anchor_count, batch_size).mean()
 
         return loss.mean()
