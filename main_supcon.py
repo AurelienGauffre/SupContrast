@@ -25,12 +25,12 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = '4'
+EXP_NUM = '4.1'
 METHOD = 'SimCLR'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-EPOCHS = 100  # default 1000
-BATCH_SIZE = 128  # default 256
+EPOCHS = 1000  # default 1000
+BATCH_SIZE = 256  # default 256
 MODEL = 'resnet18'  # default resnet50
-EXP_NAME = f'exp{EXP_NUM} (AugustinTest) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}'#f'exp{4} : SupConProto(v1)_bs256_epochs1000'
+EXP_NAME = f'EXP{EXP_NUM} (AugustinTest) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}'#f'exp{4} : SupConProto(v1)_bs256_epochs1000'
 
 HEAD = 'mlp'  # 'mlp' or 'linear'
 
