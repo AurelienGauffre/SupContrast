@@ -194,7 +194,7 @@ class SupConResNetProto(nn.Module):
         super(SupConResNetProto, self).__init__()
         model_fun, dim_in = model_dict[name]
         self.encoder = model_fun()
-        self.prototypes = nn.Parameter(torch.randn(10, feat_dim)) #todo enlever le hardcoding du nb de classes
+        self.prototypes = nn.Parameter(torch.randn(10, dim_in)) #todo enlever le hardcoding du nb de classes
         self.dim_in = dim_in
         if head == 'linear':
             self.head = nn.Linear(dim_in, feat_dim)
@@ -211,7 +211,8 @@ class SupConResNetProto(nn.Module):
     def forward(self, x):
         feat = self.encoder(x)
         feat = F.normalize(self.head(feat), dim=1)
-        return feat
+        proto_proj = F.normalize(self.head(self.prototypes), dim=1)
+        return feat, proto_proj
 
 
 class SupCEResNet(nn.Module):

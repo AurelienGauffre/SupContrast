@@ -23,15 +23,17 @@ except ImportError:
     pass
 
 import wandb
+# Rappel : ici les prototypes ne servent qu'à initialiser les poids du classifieurs, si  PREDICT_WITH_PROTO = True,
+# on utilise simplement les prototypes comme poids initiaux du classifieur, et on freeze le backbone
 
-EXP_NAME = 'exp4 LE: 100 epochs total'
-METHOD = 'SimCLR'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-PREDICT_WITH_PROTO = False #if True, init the FC weights with proto
-NO_GRAD = False # if True, freeze the backbone
+EXP_NAME = 'DELETEexp4 LE: 100 epochs total'
+METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+PREDICT_WITH_PROTO = False #if True, simply init the FC weights with proto
+NO_GRAD = False # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
 
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
-CKPT = './save/SupCon/cifar10_models/exp4/last.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
+CKPT = './save/SupCon/cifar10_models/exp5/last.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
 MODEL = 'resnet18'  # default resnet18
 
 if PREDICT_WITH_PROTO :
@@ -179,8 +181,8 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
         # compute loss
         with torch.no_grad():
             features = model.encoder(images)
-            if PREDICT_WITH_PROTO: # if we want to predict with prototypes, features have to live in contrastive space
-                features = model.head(features)
+            # if PREDICT_WITH_PROTO: # if we want to predict with prototypes, features have to live in contrastive space
+            #     features = model.head(features)
 
         output = classifier(features.detach())
         loss = criterion(output, labels)
@@ -237,8 +239,8 @@ def validate(val_loader, model, classifier, criterion, opt):
 
             # forward
             features = model.encoder(images)
-            if PREDICT_WITH_PROTO:
-                features = model.head(features)
+            # if PREDICT_WITH_PROTO: plus besoin
+            #     features = model.head(features)
             output = classifier(features)
 
             loss = criterion(output, labels)

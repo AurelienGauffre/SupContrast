@@ -25,12 +25,12 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = '4.1'
-METHOD = 'SimCLR'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+EXP_NUM = '5'
+METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 EPOCHS = 1000  # default 1000
-BATCH_SIZE = 256  # default 256
+BATCH_SIZE = 128  # default 256
 MODEL = 'resnet18'  # default resnet50
-EXP_NAME = f'EXP{EXP_NUM} (AugustinTest) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}'#f'exp{4} : SupConProto(v1)_bs256_epochs1000'
+EXP_NAME = f'EXP{EXP_NUM} (V2 : prototypes before head) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}'  # f'exp{4} : SupConProto(v1)_bs256_epochs1000'
 
 HEAD = 'mlp'  # 'mlp' or 'linear'
 
@@ -52,7 +52,9 @@ def parse_option():
     # optimization
     parser.add_argument('--learning_rate', type=float, default=0.05,
                         help='learning rate')
-    parser.add_argument('--lr_decay_epochs', type=str, default=f'{int(7/10)*EPOCHS},{int(8/10)*EPOCHS},{int(9/10)*EPOCHS}',  # '700,800,900'
+    parser.add_argument('--lr_decay_epochs', type=str,
+                        default=f'{int(7 / 10) * EPOCHS},{int(8 / 10) * EPOCHS},{int(9 / 10) * EPOCHS}',
+                        # '700,800,900'
                         help='where to decay lr, can be a list')
     parser.add_argument('--lr_decay_rate', type=float, default=0.1,
                         help='decay rate for learning rate')
@@ -193,7 +195,6 @@ def set_loader(opt):
 
 
 def set_model(opt):
-
     if opt.method in ['SupCon', 'SimCLR']:
         model = SupConResNet(name=opt.model, head=HEAD)
         criterion = SupConLoss(temperature=opt.temp)
@@ -237,7 +238,12 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
         warmup_learning_rate(opt, epoch, idx, len(train_loader), optimizer)
 
         # compute loss
-        features = model(images)
+        if opt.method in ['SupCon', 'SimCLR']:
+
+            features = model(images)
+        elif opt.method in ['SupConProto']:
+            features, proto_proj = model(images)
+
         f1, f2 = torch.split(features, [bsz, bsz], dim=0)
         features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
         if opt.method == 'SupCon':
@@ -245,14 +251,15 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
         elif opt.method == 'SimCLR':
             loss = criterion(features)
         elif opt.method == 'SupConProto':
-            #labels = torch.cat([labels, torch.arange(opt.n_cls).cuda()], dim=0)
-            prototypes = model.prototypes
+            # prototypes = model.prototypes
+
+            # labels = torch.cat([labels, torch.arange(opt.n_cls).cuda()], dim=0)
             # old way to add prototypes (this creates too much prototypes)
             # prototypes = prototypes.unsqueeze(1)
             # prototypes = prototypes.repeat(1, 2, 1)
             # features = torch.cat([features, prototypes], dim=0)
 
-            loss = criterion(features, labels, prototypes)
+            loss = criterion(features, labels, proto_proj)
 
         else:
             raise ValueError('contrastive method not supported: {}'.

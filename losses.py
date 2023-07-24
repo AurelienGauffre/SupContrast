@@ -109,7 +109,7 @@ class SupConLossProto(nn.Module):
         self.contrast_mode = contrast_mode
         self.base_temperature = base_temperature
 
-    def forward(self, features, labels, prototypes, mask=None):
+    def forward(self, features, labels, prototypes_proj, mask=None):
         """Compute loss for model. If both `labels` and `mask` are None,
         it degenerates to SimCLR unsupervised loss:
         https://arxiv.org/pdf/2002.05709.pdf
@@ -125,7 +125,7 @@ class SupConLossProto(nn.Module):
         device = (torch.device('cuda')
                   if features.is_cuda
                   else torch.device('cpu'))
-        n_cls = prototypes.shape[0]
+        n_cls = prototypes_proj.shape[0]
 
         if len(features.shape) < 3:
             raise ValueError('`features` needs to be [bsz, n_views, ...],'
@@ -151,10 +151,10 @@ class SupConLossProto(nn.Module):
         anchor_feature = contrast_feature
         anchor_count = contrast_count # = 2 for supcon classical case
 
-        # Adding prototypes to anchor_feature
-        prototypes = F.normalize(prototypes, dim=1)
-        anchor_feature = torch.cat([anchor_feature, prototypes], dim=0)
-        contrast_feature = torch.cat([contrast_feature, prototypes], dim=0)
+        # Adding prototypes_proj to anchor_feature
+        #prototypes_proj = F.normalize(prototypes_proj, dim=1) deja normalisé avant
+        anchor_feature = torch.cat([anchor_feature, prototypes_proj], dim=0)
+        contrast_feature = torch.cat([contrast_feature, prototypes_proj], dim=0)
         # compute logits
         anchor_dot_contrast = torch.div(
             torch.matmul(anchor_feature, contrast_feature.T),
@@ -165,7 +165,7 @@ class SupConLossProto(nn.Module):
 
         # tile mask
         mask = mask.repeat(anchor_count, contrast_count) #2B x 2B
-        # Creating the mask for the prototypes
+        # Creating the mask for the prototypes_proj
         mask_prototypes = torch.eq(torch.arange(n_cls).to(device).reshape(-1,1),labels.T).float()
         mask_prototypes_down = mask_prototypes.repeat(1, contrast_count)
         mask = torch.cat([mask, mask_prototypes_down], dim=0)
