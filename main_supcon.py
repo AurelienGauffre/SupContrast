@@ -25,12 +25,12 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = '3'
-EXP_NAME = f'exp{3} : SupConProto(v1)_bs256_epochs1000'
-METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-EPOCHS = 1000  # default 1000
-BATCH_SIZE = 256  # default 256
+EXP_NUM = '4'
+METHOD = 'SimCLR'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+EPOCHS = 100  # default 1000
+BATCH_SIZE = 128  # default 256
 MODEL = 'resnet18'  # default resnet50
+EXP_NAME = f'exp{EXP_NUM} (AugustinTest) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}'#f'exp{4} : SupConProto(v1)_bs256_epochs1000'
 
 HEAD = 'mlp'  # 'mlp' or 'linear'
 
@@ -52,7 +52,7 @@ def parse_option():
     # optimization
     parser.add_argument('--learning_rate', type=float, default=0.05,
                         help='learning rate')
-    parser.add_argument('--lr_decay_epochs', type=str, default='700,800,900',  # '700,800,900'
+    parser.add_argument('--lr_decay_epochs', type=str, default='70,80,90',  # '700,800,900'
                         help='where to decay lr, can be a list')
     parser.add_argument('--lr_decay_rate', type=float, default=0.1,
                         help='decay rate for learning rate')
@@ -247,6 +247,7 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
         elif opt.method == 'SupConProto':
             #labels = torch.cat([labels, torch.arange(opt.n_cls).cuda()], dim=0)
             prototypes = model.prototypes
+            # old way to add prototypes (this creates too much prototypes)
             # prototypes = prototypes.unsqueeze(1)
             # prototypes = prototypes.repeat(1, 2, 1)
             # features = torch.cat([features, prototypes], dim=0)
