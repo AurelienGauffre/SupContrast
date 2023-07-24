@@ -52,7 +52,7 @@ def parse_option():
     # optimization
     parser.add_argument('--learning_rate', type=float, default=0.05,
                         help='learning rate')
-    parser.add_argument('--lr_decay_epochs', type=str, default='70,80,90',  # '700,800,900'
+    parser.add_argument('--lr_decay_epochs', type=str, default='700,800,900',  # '700,800,900'
                         help='where to decay lr, can be a list')
     parser.add_argument('--lr_decay_rate', type=float, default=0.1,
                         help='decay rate for learning rate')
