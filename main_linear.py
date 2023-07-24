@@ -24,14 +24,14 @@ except ImportError:
 
 import wandb
 
-EXP_NAME = 'exp3 LE: 100epochs'
-METHOD = 'SupConProto'  # default SupConProto
-PREDICT_WITH_PROTO = True #if True, init the FC weights with proto
-NO_GRAD = True # if True, freeze the backbone
+EXP_NAME = 'exp4 LE: 100 epochs total'
+METHOD = 'SimCLR'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+PREDICT_WITH_PROTO = False #if True, init the FC weights with proto
+NO_GRAD = False # if True, freeze the backbone
 
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
-CKPT = './save/SupCon/cifar10_models/exp3/ckpt_epoch_100.pth' # default last.pth
+CKPT = './save/SupCon/cifar10_models/exp4/last.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
 MODEL = 'resnet18'  # default resnet18
 
 if PREDICT_WITH_PROTO :
