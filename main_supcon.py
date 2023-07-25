@@ -25,12 +25,14 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = '5'
+EXP_NUM = '42'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-EPOCHS = 1000  # default 1000
-BATCH_SIZE = 256  # default 256
+EPOCHS = 1  # default 1000
+BATCH_SIZE = 128  # default 256
 MODEL = 'resnet18'  # default resnet50
-EXP_NAME = f'EXP{EXP_NUM} (V2 : prototypes before head) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}'  # f'exp{4} : SupConProto(v1)_bs256_epochs1000'
+PROTO_AFTER_HEAD = True # default True
+
+EXP_NAME = f"EXP{5} (V2 :  before head) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 HEAD = 'mlp'  # 'mlp' or 'linear'
 
@@ -199,7 +201,7 @@ def set_model(opt):
         model = SupConResNet(name=opt.model, head=HEAD)
         criterion = SupConLoss(temperature=opt.temp)
     elif opt.method in ['SupConProto']:
-        model = SupConResNetProto(name=opt.model, head=HEAD)
+        model = SupConResNetProto(name=opt.model, head=HEAD,feat_dim=128, proto_after_head= PROTO_AFTER_HEAD)
         criterion = SupConLossProto(temperature=opt.temp)
 
     # enable synchronized Batch Normalization

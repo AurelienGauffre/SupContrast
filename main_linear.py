@@ -30,7 +30,7 @@ EXP_NAME = 'exp5 LE: 100 epochs'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 PREDICT_WITH_PROTO = True #if True, simply init the FC weights with proto
 NO_GRAD = True # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
-
+PROTO_AFTER_HEAD = False # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
 CKPT = './save/SupCon/cifar10_models/exp5/ckpt_epoch_100.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
@@ -181,8 +181,8 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
         # compute loss
         with torch.no_grad():
             features = model.encoder(images)
-            # if PREDICT_WITH_PROTO: # if we want to predict with prototypes, features have to live in contrastive space
-            #     features = model.head(features)
+            if PROTO_AFTER_HEAD: # when prototypes are after head, features have to live in contrastive space
+                features = model.head(features)
 
         output = classifier(features.detach())
         loss = criterion(output, labels)
@@ -239,8 +239,8 @@ def validate(val_loader, model, classifier, criterion, opt):
 
             # forward
             features = model.encoder(images)
-            # if PREDICT_WITH_PROTO: plus besoin
-            #     features = model.head(features)
+            if PROTO_AFTER_HEAD: # when prototypes are after head, features have to live in contrastive space
+                features = model.head(features)
             output = classifier(features)
 
             loss = criterion(output, labels)
