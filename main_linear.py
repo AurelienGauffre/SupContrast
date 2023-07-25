@@ -124,7 +124,7 @@ def set_model(opt):
     if opt.method in ['SupCon', 'SimCLR']:
         model = SupConResNet(name=opt.model)
     elif opt.method in ['SupConProto']:
-        model = SupConResNetProto(name=opt.model)
+        model = SupConResNetProto(name=opt.model, proto_after_head=PROTO_AFTER_HEAD)
     else:
         raise ValueError('contrastive method not supported: {}'.
                          format(opt.method))
