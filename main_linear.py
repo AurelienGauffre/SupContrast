@@ -29,7 +29,7 @@ import wandb
 EXP_NAME = 'exp3 LE: 1000 epochs'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 PREDICT_WITH_PROTO = True #if True, simply init the FC weights with proto
-NO_GRAD = True # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
+NO_GRAD = False # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
 PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
