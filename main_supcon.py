@@ -25,14 +25,14 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = '42'
+EXP_NUM = '1'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-EPOCHS = 1  # default 1000
-BATCH_SIZE = 128  # default 256
+EPOCHS = 1000  # default 1000
+BATCH_SIZE = 256  # default 256
 MODEL = 'resnet18'  # default resnet50
 PROTO_AFTER_HEAD = True # default True
-
-EXP_NAME = f"EXP{5} (V2 :  before head) : {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
+DATASET = 'cifar100'
+EXP_NAME = f"EXP{1}: {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 HEAD = 'mlp'  # 'mlp' or 'linear'
 
@@ -67,7 +67,7 @@ def parse_option():
 
     # model dataset
     parser.add_argument('--model', type=str, default=MODEL)
-    parser.add_argument('--dataset', type=str, default='cifar10',
+    parser.add_argument('--dataset', type=str, default=DATASET,
                         choices=['cifar10', 'cifar100', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
     parser.add_argument('--std', type=str, help='std of dataset in path in form of str tuple')
@@ -309,8 +309,9 @@ def main():
     # tensorboard
     logger = tb_logger.Logger(logdir=opt.tb_folder, flush_secs=2)
 
+
     # Initialize wandb:
-    wandb.init(project="SupConPrototypes", name=opt.model_name, config=vars(opt))
+    wandb.init(project=f"SupConPrototypes{opt.dataset}", name=opt.model_name, config=vars(opt))
 
     # training routine
     for epoch in range(1, opt.epochs + 1):
