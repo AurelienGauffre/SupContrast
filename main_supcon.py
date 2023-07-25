@@ -26,7 +26,7 @@ except ImportError:
     pass
 
 EXP_NUM = '3'
-METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 EPOCHS = 1000  # default 1000
 BATCH_SIZE = 256  # default 256
 MODEL = 'resnet50'  # default resnet50
