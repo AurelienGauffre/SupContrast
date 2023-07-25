@@ -25,14 +25,14 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = '1'
-METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+EXP_NUM = '2'
+METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 EPOCHS = 1000  # default 1000
 BATCH_SIZE = 256  # default 256
 MODEL = 'resnet18'  # default resnet50
 PROTO_AFTER_HEAD = True # default True
 DATASET = 'cifar100'
-EXP_NAME = f"EXP{1}: {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
+EXP_NAME = f"EXP{EXP_NUM}: {METHOD}_{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 HEAD = 'mlp'  # 'mlp' or 'linear'
 
