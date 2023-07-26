@@ -164,8 +164,9 @@ class LinearBatchNorm(nn.Module):
 
 class SupConResNet(nn.Module):
     """backbone + projection head"""
-    def __init__(self, name='resnet50', head='mlp', feat_dim=128):
+    def __init__(self, name='resnet50', head='mlp', feat_dim=128,n_cls=10):
         super(SupConResNet, self).__init__()
+        self.n_cls = n_cls
         model_fun, dim_in = model_dict[name]
         self.dim_in = dim_in
         self.encoder = model_fun()
@@ -190,15 +191,16 @@ class SupConResNet(nn.Module):
 
 class SupConResNetProto(nn.Module):
     """backbone + projection head"""
-    def __init__(self, name='resnet50', head='mlp', feat_dim=128,proto_after_head=True):
+    def __init__(self, name='resnet50', head='mlp', feat_dim=128,n_cls=10,proto_after_head=True):
         super(SupConResNetProto, self).__init__()
         model_fun, dim_in = model_dict[name]
         self.encoder = model_fun()
         self.proto_after_head = proto_after_head
+        self.n_cls = n_cls
         if proto_after_head:
-            self.prototypes = nn.Parameter(torch.randn(10, feat_dim))
+            self.prototypes = nn.Parameter(torch.randn(n_cls, feat_dim))
         else:
-            self.prototypes = nn.Parameter(torch.randn(10, dim_in)) #todo enlever le hardcoding du nb de classes
+            self.prototypes = nn.Parameter(torch.randn(n_cls, dim_in)) #todo enlever le hardcoding du nb de classes
         self.dim_in = dim_in
         if head == 'linear':
             self.head = nn.Linear(dim_in, feat_dim)

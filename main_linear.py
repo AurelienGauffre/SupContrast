@@ -122,10 +122,14 @@ def parse_option():
 
 
 def set_model(opt):
+    ckpt = torch.load(opt.ckpt, map_location='cpu')
+    state_dict = ckpt['model']
+    #print(state_dict.n_cls)
     if opt.method in ['SupCon', 'SimCLR']:
-        model = SupConResNet(name=opt.model)
+        model = SupConResNet(name=opt.model,n_cls=opt.n_cls)
     elif opt.method in ['SupConProto']:
-        model = SupConResNetProto(name=opt.model, proto_after_head=PROTO_AFTER_HEAD)
+        model = SupConResNetProto(name=opt.model, feat_dim=128, n_cls=opt.n_cls,
+                                  proto_after_head=PROTO_AFTER_HEAD)
     else:
         raise ValueError('contrastive method not supported: {}'.
                          format(opt.method))
@@ -135,9 +139,6 @@ def set_model(opt):
         classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls,prototypes = model.prototypes)
     else:
         classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls)
-
-    ckpt = torch.load(opt.ckpt, map_location='cpu')
-    state_dict = ckpt['model']
 
     if torch.cuda.is_available():
         if torch.cuda.device_count() > 1:

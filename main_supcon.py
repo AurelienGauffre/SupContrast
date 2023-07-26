@@ -25,11 +25,11 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = '3'
-METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+EXP_NUM = '1'
+METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 EPOCHS = 1000  # default 1000
 BATCH_SIZE = 256  # default 256
-MODEL = 'resnet50'  # default resnet50
+MODEL = 'resnet18'  # default resnet50
 PROTO_AFTER_HEAD = True # default True
 DATASET = 'cifar100'
 EXP_NAME = f"EXP{EXP_NUM}: {MODEL}{METHOD}_{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
@@ -198,10 +198,10 @@ def set_loader(opt):
 
 def set_model(opt):
     if opt.method in ['SupCon', 'SimCLR']:
-        model = SupConResNet(name=opt.model, head=HEAD)
+        model = SupConResNet(name=opt.model, head=HEAD,n_cls=opt.n_cls)
         criterion = SupConLoss(temperature=opt.temp)
     elif opt.method in ['SupConProto']:
-        model = SupConResNetProto(name=opt.model, head=HEAD,feat_dim=128, proto_after_head= PROTO_AFTER_HEAD)
+        model = SupConResNetProto(name=opt.model, head=HEAD,feat_dim=128,n_cls=opt.n_cls, proto_after_head= PROTO_AFTER_HEAD)
         criterion = SupConLossProto(temperature=opt.temp)
 
     # enable synchronized Batch Normalization
