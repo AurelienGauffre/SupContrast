@@ -30,7 +30,7 @@ EXP_NAME = 'exp1 LE: 100 epochs'
 METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 PREDICT_WITH_PROTO = False #if True, simply init the FC weights with proto
 NO_GRAD = False # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
-PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
+PROTO_AFTER_HEAD = False # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
 DATASET = 'cifar100'  # default cifar10
@@ -42,6 +42,8 @@ if PREDICT_WITH_PROTO :
 if NO_GRAD :
     EXP_NAME += '_noGrad'
     EPOCHS = 10
+if not PREDICT_WITH_PROTO:
+    PROTO_AFTER_HEAD = False
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
 
@@ -282,7 +284,7 @@ def main():
     optimizer = set_optimizer(opt, classifier)
 
     # Initialize wandb:
-    wandb.init(project="SupConPrototypes", name=f"{opt.model_name}", config=vars(opt))
+    wandb.init(project=f"SupConPrototypes{DATASET}", name=f"{opt.model_name}", config=vars(opt))
 
     # training routine
 
