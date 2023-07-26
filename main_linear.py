@@ -26,7 +26,7 @@ import wandb
 # Rappel : ici les prototypes ne servent qu'à initialiser les poids du classifieurs, si  PREDICT_WITH_PROTO = True,
 # on utilise simplement les prototypes comme poids initiaux du classifieur, et on freeze le backbone
 
-EXP_NAME = 'exp1 LE: 100 epochs'
+EXP_NAME = 'exp2 LE: 100 epochs'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 PREDICT_WITH_PROTO = False #if True, simply init the FC weights with proto
 NO_GRAD = False # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
@@ -34,7 +34,7 @@ PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProt
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
 DATASET = 'cifar100'  # default cifar10
-CKPT = f'./save/SupCon/{DATASET}_models/exp1/ckpt_epoch_100.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
+CKPT = f'./save/SupCon/{DATASET}_models/exp2/ckpt_epoch_100.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
 MODEL = 'resnet18'  # default resnet18
 
 if PREDICT_WITH_PROTO :
