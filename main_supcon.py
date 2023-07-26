@@ -336,7 +336,7 @@ for METHOD_i,EXP_NUM_i in zip(['SupCon', 'SupConProto'],[3,4]):
         save_file = os.path.join(
             opt.save_folder, 'last.pth')
         save_model(model, optimizer, opt, opt.epochs, save_file)
-
+        wandb.finish()
 
 if __name__ == '__main__':
     main()
