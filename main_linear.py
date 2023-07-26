@@ -26,14 +26,15 @@ import wandb
 # Rappel : ici les prototypes ne servent qu'à initialiser les poids du classifieurs, si  PREDICT_WITH_PROTO = True,
 # on utilise simplement les prototypes comme poids initiaux du classifieur, et on freeze le backbone
 
-EXP_NAME = 'exp3 LE: 1000 epochs'
+EXP_NAME = 'exp1 LE: 1000 epochs'
 METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-PREDICT_WITH_PROTO = False #if True, simply init the FC weights with proto
-NO_GRAD = False # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
+PREDICT_WITH_PROTO = True #if True, simply init the FC weights with proto
+NO_GRAD = True # if True, freeze the backbone pour evaluer la classif en produit scalaire avec les protos
 PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
-CKPT = './save/SupCon/cifar10_models/exp3/last.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
+DATASET = 'cifar100'  # default cifar10
+CKPT = './save/SupCon/{DATASET}_models/exp1/last.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
 MODEL = 'resnet18'  # default resnet18
 
 if PREDICT_WITH_PROTO :
@@ -69,7 +70,7 @@ def parse_option():
 
     # model dataset
     parser.add_argument('--model', type=str, default=MODEL)
-    parser.add_argument('--dataset', type=str, default='cifar10',
+    parser.add_argument('--dataset', type=str, default=DATASET,
                         choices=['cifar10', 'cifar100'], help='dataset')
 
     # other setting

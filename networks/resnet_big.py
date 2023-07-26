@@ -243,7 +243,7 @@ class LinearClassifier(nn.Module):
         if prototypes is None:
             self.fc = nn.Linear(dim_in, num_classes)
         else :
-            self.fc = nn.Linear(prototypes.shape[1], prototypes.shape[0], bias=False)
+            self.fc = nn.Linear(prototypes.shape[1], prototypes.shape[0], bias=False) #no bias for prototype classifier!
             self.fc.weight = prototypes
     def forward(self, features):
         return self.fc(features)
