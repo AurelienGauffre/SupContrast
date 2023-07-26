@@ -24,7 +24,7 @@ try:
     from apex import amp, optimizers
 except ImportError:
     pass
-for METHOD_i,EXP_NUM_i in zip(['SupCon', 'SupConProto'],[3,4]):
+for METHOD_i,EXP_NUM_i in zip(['SupConProto','SupCon' ],[3,4]):
     EXP_NUM = EXP_NUM_i
     METHOD = METHOD_i  # 'SupCon' or 'SimCLR' or 'SupConProto'
     EPOCHS = 1000  # default 1000
