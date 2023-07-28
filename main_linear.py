@@ -34,7 +34,7 @@ PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProt
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
 DATASET = 'cifar100'  # default cifar10
-CKPT = f'./save/SupCon/{DATASET}_models/exp1/ckpt_epoch_{}.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
+CKPT = f'./save/SupCon/{DATASET}_models/exp1/ckpt_epoch_{PRETRAINING_EPOCHS}.pth' # default 'last.pth' or 'ckpt_epoch_100.pth'
 MODEL = 'resnet18'  # default resnet18
 
 if PREDICT_WITH_PROTO :
