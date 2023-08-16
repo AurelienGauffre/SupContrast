@@ -33,7 +33,7 @@ BATCH_SIZE = 256  # default 256
 MODEL = 'resnet50'  # resnet18 resnet50
 PROTO_AFTER_HEAD = True # default True
 DATASET = 'cifar100'
-EXP_NAME = f"DELETEEXP{EXP_NUM}: {METHOD}_{MODEL}_bs{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
+EXP_NAME = f"{EXP_NUM}: {METHOD}_{MODEL}_bs{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 USE_SUPCON_FROM_TORCH_METRIC = False
 
