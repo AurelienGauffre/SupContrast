@@ -27,12 +27,12 @@ except ImportError:
     pass
 
 EXP_NUM = 3
-METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 EPOCHS = 1000  # default 1000
-BATCH_SIZE = 64  # default 256
-MODEL = 'resnet18'  # default resnet50
+BATCH_SIZE = 256  # default 256
+MODEL = 'resnet50'  # resnet18 resnet50
 PROTO_AFTER_HEAD = True # default True
-DATASET = 'cifar10'
+DATASET = 'cifar100'
 EXP_NAME = f"DELETEEXP{EXP_NUM}: {METHOD}_{MODEL}_bs{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 USE_SUPCON_FROM_TORCH_METRIC = False
