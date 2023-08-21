@@ -200,7 +200,7 @@ class SupConResNetProto(nn.Module):
         if proto_after_head:
             self.prototypes = nn.Parameter(torch.randn(n_cls, feat_dim))
         else:
-            self.prototypes = nn.Parameter(torch.randn(n_cls, dim_in)) #todo enlever le hardcoding du nb de classes
+            self.prototypes = nn.Parameter(torch.randn(n_cls, dim_in))
         self.dim_in = dim_in
         if head == 'linear':
             self.head = nn.Linear(dim_in, feat_dim)

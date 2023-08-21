@@ -26,8 +26,8 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = 3
-METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+EXP_NUM = 4
+METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 EPOCHS = 1000  # default 1000
 BATCH_SIZE = 256  # default 256
 MODEL = 'resnet50'  # resnet18 resnet50
@@ -114,7 +114,7 @@ def parse_option():
     for it in iterations:
         opt.lr_decay_epochs.append(int(it))
 
-    opt.model_name = f"{opt.method}_{opt.dataset}_{opt.model}_lr_{opt.learning_rate}_decay_{opt.weight_decay}_bsz_{opt.batch_size}_temp_{opt.temp}_trial_{opt.trial}" if EXP_NAME == '' else EXP_NAME
+    opt.model_name = f"EXP{opt.method}_{opt.dataset}_{opt.model}_lr_{opt.learning_rate}_decay_{opt.weight_decay}_bsz_{opt.batch_size}_temp_{opt.temp}_trial_{opt.trial}" if EXP_NAME == '' else EXP_NAME
 
     if opt.cosine:
         opt.model_name = '{}_cosine'.format(opt.model_name)
