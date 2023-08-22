@@ -25,7 +25,7 @@ except ImportError:
 import wandb
 # Rappel : ici les prototypes ne servent qu'à initialiser les poids du classifieurs, si  PREDICT_WITH_PROTO = True,
 # on utilise simplement les prototypes comme poids initiaux du classifieur, et on freeze le backbone
-METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
 DATASET = 'cifar100'  # default cifar10
 MODEL = 'resnet50'  # default resnet18
