@@ -30,10 +30,10 @@ PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProt
 DATASET = 'cifar100'  # default cifar10
 MODEL = 'resnet50'  # default resnet18
 
-PRETRAINING_EPOCHS = 1000
-EXP_NUMBER = 3
+PRETRAINING_EPOCHS = 100
+EXP_NUMBER = 4
 EXP_NAME = f'exp{EXP_NUMBER} LE: {PRETRAINING_EPOCHS} epochs'
-PREDICT_WITH_PROTO = False #if True, simply init the FC weights with proto, if not random init, not real interest since the aim of prototypes is mostly to init the FC weights
+PREDICT_WITH_PROTO = True #if True, simply init the FC weights with proto, if not random init, not real interest since the aim of prototypes is mostly to init the FC weights
 NO_GRAD = False # if True, freeze the classifier (backbone is always frozen) pour evaluer la classif en produit scalaire avec les protos direct sans les rentrainer
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
