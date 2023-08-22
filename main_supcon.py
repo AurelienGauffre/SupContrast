@@ -33,7 +33,7 @@ BATCH_SIZE = 256  # default 256
 MODEL = 'resnet50'  # resnet18 resnet50
 PROTO_AFTER_HEAD = True # default True
 DATASET = 'cifar100'
-EXP_NAME = f"{EXP_NUM}: {METHOD}_{MODEL}_bs{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
+EXP_NAME = f"EXP{EXP_NUM}: {METHOD}_{MODEL}_bs{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 USE_SUPCON_FROM_TORCH_METRIC = False
 
@@ -114,7 +114,7 @@ def parse_option():
     for it in iterations:
         opt.lr_decay_epochs.append(int(it))
 
-    opt.model_name = f"EXP{opt.method}_{opt.dataset}_{opt.model}_lr_{opt.learning_rate}_decay_{opt.weight_decay}_bsz_{opt.batch_size}_temp_{opt.temp}_trial_{opt.trial}" if EXP_NAME == '' else EXP_NAME
+    opt.model_name = f"{opt.method}_{opt.dataset}_{opt.model}_lr_{opt.learning_rate}_decay_{opt.weight_decay}_bsz_{opt.batch_size}_temp_{opt.temp}_trial_{opt.trial}" if EXP_NAME == '' else EXP_NAME
 
     if opt.cosine:
         opt.model_name = '{}_cosine'.format(opt.model_name)
