@@ -12,7 +12,7 @@ from main_ce import set_loader
 from util import AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate, accuracy
 from util import set_optimizer
-from networks.resnet_big import SupConResNet, LinearClassifier,SupConResNetProto
+from networks.resnet_big import SupConResNet, LinearClassifier, SupConResNetProto
 
 import torch.nn as nn
 
@@ -23,31 +23,34 @@ except ImportError:
     pass
 
 import wandb
+
 # Rappel : ici les prototypes ne servent qu'à initialiser les poids du classifieurs, si  PREDICT_WITH_PROTO = True,
 # on utilise simplement les prototypes comme poids initiaux du classifieur, et on freeze le backbone
 METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-PROTO_AFTER_HEAD = True # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
+PROTO_AFTER_HEAD = True  # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
 DATASET = 'cifar10'  # default cifar10
 MODEL = 'resnet18'  # default resnet18
 
-
-PRETRAINING_EPOCHS = 100 #just to load the food model name
+PRETRAINING_EPOCHS = 100  # just to load the food model name
 EXP_NUMBER = 10
 EXP_NAME = f'exp{EXP_NUMBER} LE: {PRETRAINING_EPOCHS} epochs'
-PREDICT_WITH_PROTO = False #if True, simply init the FC weights with proto, if not random init, not real interest since the aim of prototypes is mostly to init the FC weights
-NO_GRAD = False # if True, freeze the classifier (backbone is always frozen) pour evaluer la classif en produit scalaire avec les protos direct sans les rentrainer
+PREDICT_WITH_PROTO = False  # if True, simply init the FC weights with proto, if not random init, not real interest since the aim of prototypes is mostly to init the FC weights
+NO_GRAD = False  # if True, freeze the classifier (backbone is always frozen) pour evaluer la classif en produit scalaire avec les protos direct sans les rentrainer
+FINE_TUNE_BACKBONE = True  # default False : if True, finetune the whole model (to show to Alexandre that this works better)
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
-CKPT = f'./save/SupCon/{DATASET}_models/exp{EXP_NUMBER}/ckpt_epoch_{PRETRAINING_EPOCHS}.pth' # default 'last.pth' or f'ckpt_epoch_{PRETRAINING_EPOCHS}.pth'
-LR = 0.1 #default 0.1
+CKPT = f'./save/SupCon/{DATASET}_models/exp{EXP_NUMBER}/ckpt_epoch_{PRETRAINING_EPOCHS}.pth'  # default 'last.pth' or f'ckpt_epoch_{PRETRAINING_EPOCHS}.pth'
+LR = 0.1  # default 0.1
 
-if PREDICT_WITH_PROTO :
+if PREDICT_WITH_PROTO:
     EXP_NAME += '_predWithProto'
-if NO_GRAD :
+if NO_GRAD:
     EXP_NAME += '_noGrad'
     EPOCHS = 10
 if not PREDICT_WITH_PROTO:
     PROTO_AFTER_HEAD = False
+
+
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
 
@@ -130,9 +133,9 @@ def parse_option():
 def set_model(opt):
     ckpt = torch.load(opt.ckpt, map_location='cpu')
     state_dict = ckpt['model']
-    #print(state_dict.n_cls)
+    # print(state_dict.n_cls)
     if opt.method in ['SupCon', 'SimCLR']:
-        model = SupConResNet(name=opt.model,n_cls=opt.n_cls)
+        model = SupConResNet(name=opt.model, n_cls=opt.n_cls)
     elif opt.method in ['SupConProto']:
         model = SupConResNetProto(name=opt.model, feat_dim=128, n_cls=opt.n_cls,
                                   proto_after_head=PROTO_AFTER_HEAD)
@@ -142,7 +145,7 @@ def set_model(opt):
 
     criterion = torch.nn.CrossEntropyLoss()
     if PREDICT_WITH_PROTO:
-        classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls,prototypes = model.prototypes)
+        classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls, prototypes=model.prototypes)
     else:
         classifier = LinearClassifier(name=opt.model, num_classes=opt.n_cls)
 
@@ -187,10 +190,15 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
         warmup_learning_rate(opt, epoch, idx, len(train_loader), optimizer)
 
         # compute loss
-        with torch.no_grad():
+        if FINE_TUNE_BACKBONE: # we dont us torch no grad here because we want to finetune the backbone
             features = model.encoder(images)
-            if PROTO_AFTER_HEAD: # when prototypes are after head, features have to live in contrastive space
+            if PROTO_AFTER_HEAD:  # when prototypes are after head, features have to live in contrastive space
                 features = model.head(features)
+        else:
+            with torch.no_grad():
+                features = model.encoder(images)
+                if PROTO_AFTER_HEAD:  # when prototypes are after head, features have to live in contrastive space
+                    features = model.head(features)
 
         output = classifier(features.detach())
         loss = criterion(output, labels)
@@ -247,7 +255,7 @@ def validate(val_loader, model, classifier, criterion, opt):
 
             # forward
             features = model.encoder(images)
-            if PROTO_AFTER_HEAD: # when prototypes are after head, features have to live in contrastive space
+            if PROTO_AFTER_HEAD:  # when prototypes are after head, features have to live in contrastive space
                 features = model.head(features)
             output = classifier(features)
 
@@ -300,7 +308,7 @@ def main():
 
         with torch.set_grad_enabled(not NO_GRAD):
             train_loss, train_acc = train(train_loader, model, classifier, criterion,
-                                      optimizer, epoch, opt)
+                                          optimizer, epoch, opt)
         time2 = time.time()
         print('Train epoch {}, total time {:.2f}, accuracy:{:.2f}'.format(
             epoch, time2 - time1, train_acc))
@@ -318,7 +326,6 @@ def main():
                    "Val/Acc": val_acc, "Val/BestValAcc": best_acc})
 
         print('best accuracy: {:.2f}'.format(best_acc))
-
 
 
 if __name__ == '__main__':
