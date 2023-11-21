@@ -31,14 +31,14 @@ DATASET = 'cifar10'  # default cifar10
 MODEL = 'resnet18'  # default resnet18
 
 
-PRETRAINING_EPOCHS = 800 #just to load the food model name
+PRETRAINING_EPOCHS = 100 #just to load the food model name
 EXP_NUMBER = 10
 EXP_NAME = f'exp{EXP_NUMBER} LE: {PRETRAINING_EPOCHS} epochs'
 PREDICT_WITH_PROTO = False #if True, simply init the FC weights with proto, if not random init, not real interest since the aim of prototypes is mostly to init the FC weights
 NO_GRAD = True # if True, freeze the classifier (backbone is always frozen) pour evaluer la classif en produit scalaire avec les protos direct sans les rentrainer
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
-CKPT = f'./save/SupCon/{DATASET}_models/exp{EXP_NUMBER}/last.pth' # default 'last.pth' or f'ckpt_epoch_{PRETRAINING_EPOCHS}.pth'
+CKPT = f'./save/SupCon/{DATASET}_models/exp{EXP_NUMBER}/ckpt_epoch_{PRETRAINING_EPOCHS}.pth' # default 'last.pth' or f'ckpt_epoch_{PRETRAINING_EPOCHS}.pth'
 LR = 0.1 #default 0.1
 
 if PREDICT_WITH_PROTO :
