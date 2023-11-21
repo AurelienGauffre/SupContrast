@@ -26,13 +26,13 @@ try:
 except ImportError:
     pass
 
-EXP_NUM = 4
-METHOD = 'SupConProto'  # 'SupCon' or 'SimCLR' or 'SupConProto'
-EPOCHS = 1000  # default 1000
-BATCH_SIZE = 256  # default 256
-MODEL = 'resnet50'  # resnet18 resnet50
+EXP_NUM = 10
+METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
+EPOCHS = 500  # default 1000
+BATCH_SIZE = 128  # default 256
+MODEL = 'resnet18'  # resnet18 resnet50
 PROTO_AFTER_HEAD = True # default True
-DATASET = 'cifar100'
+DATASET = 'cifar10'
 EXP_NAME = f"EXP{EXP_NUM}: {METHOD}_{MODEL}_bs{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 USE_SUPCON_FROM_TORCH_METRIC = False
@@ -314,7 +314,7 @@ def main():
 
 
     # Initialize wandb:
-    wandb.init(project=f"SupConPrototypes{opt.dataset}", name=opt.model_name, config=vars(opt))
+    wandb.init(project=f"SupConTest{opt.dataset}", name=opt.model_name, config=vars(opt))
 
     # training routine
     for epoch in range(1, opt.epochs + 1):
@@ -343,4 +343,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
