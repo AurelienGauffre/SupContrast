@@ -47,6 +47,8 @@ if PREDICT_WITH_PROTO:
 if NO_GRAD:
     EXP_NAME += '_noGrad'
     EPOCHS = 10
+if FINE_TUNE_BACKBONE:
+    EXP_NAME += '_FTBackbone'
 if not PREDICT_WITH_PROTO:
     PROTO_AFTER_HEAD = False
 
