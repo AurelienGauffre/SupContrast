@@ -32,7 +32,7 @@ EPOCHS = 500  # default 1000
 BATCH_SIZE = 128  # default 256
 MODEL = 'resnet18'  # resnet18 resnet50
 PROTO_AFTER_HEAD = True # default True
-DATASET = 'cifar10'
+DATASET = 'cifar100'
 EXP_NAME = f"EXP{EXP_NUM}: {METHOD}_{MODEL}_bs{BATCH_SIZE}_epochs{EPOCHS}{'' if PROTO_AFTER_HEAD else 'PROTO_BEFORE HEAD'}"  # f'exp{4} : SupConProto(v1)_bs256_epochs1000"
 
 USE_SUPCON_FROM_TORCH_METRIC = False
