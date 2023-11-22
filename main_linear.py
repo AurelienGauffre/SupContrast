@@ -31,7 +31,7 @@ PROTO_AFTER_HEAD = True  # has to be true if the pretrained model is a SupConPro
 DATASET = 'cifar100'  # default cifar10
 MODEL = 'resnet18'  # default resnet18
 
-PRETRAINING_EPOCHS = 500  # just to load the food model name
+PRETRAINING_EPOCHS = 100  # just to load the food model name
 EXP_NUMBER = 10
 EXP_NAME = f'exp{EXP_NUMBER} LE: {PRETRAINING_EPOCHS} epochs'
 PREDICT_WITH_PROTO = False  # if True, simply init the FC weights with proto, if not random init, not real interest since the aim of prototypes is mostly to init the FC weights
