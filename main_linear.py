@@ -28,15 +28,15 @@ import wandb
 # on utilise simplement les prototypes comme poids initiaux du classifieur, et on freeze le backbone
 METHOD = 'SupCon'  # 'SupCon' or 'SimCLR' or 'SupConProto'
 PROTO_AFTER_HEAD = True  # has to be true if the pretrained model is a SupConProto model with proto_after_head=True
-DATASET = 'cifar10'  # default cifar10
+DATASET = 'cifar100'  # default cifar10
 MODEL = 'resnet18'  # default resnet18
 
-PRETRAINING_EPOCHS = 100  # just to load the food model name
+PRETRAINING_EPOCHS = 500  # just to load the food model name
 EXP_NUMBER = 10
 EXP_NAME = f'exp{EXP_NUMBER} LE: {PRETRAINING_EPOCHS} epochs'
 PREDICT_WITH_PROTO = False  # if True, simply init the FC weights with proto, if not random init, not real interest since the aim of prototypes is mostly to init the FC weights
 NO_GRAD = False  # if True, freeze the classifier (backbone is always frozen) pour evaluer la classif en produit scalaire avec les protos direct sans les rentrainer
-FINE_TUNE_BACKBONE = True  # default False : if True, finetune the whole model (to show to Alexandre that this works better)
+FINE_TUNE_BACKBONE = False  # default False : if True, finetune the whole model (to show to Alexandre that this works better)
 BS = 128  # default 128 ou 256
 EPOCHS = 100  # default 100
 CKPT = f'./save/SupCon/{DATASET}_models/exp{EXP_NUMBER}/ckpt_epoch_{PRETRAINING_EPOCHS}.pth'  # default 'last.pth' or f'ckpt_epoch_{PRETRAINING_EPOCHS}.pth'
